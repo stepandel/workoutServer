@@ -40,3 +40,30 @@ export type GetExercisesResponse = {
 export type GetAllExercisesResponse = {
   exercises: Exercise[];
 };
+
+export type Workout = {
+  id: string;
+  name: string;
+  focus?: string;
+  type?: string;
+  sets: Set[];
+};
+
+export type Set = {
+  exId: string;
+  time?: number;
+  reps?: number;
+  sets?: number;
+};
+
+export type SaveWorkoutRequest = {
+  workout: Workout;
+};
+
+export type GetWorkoutsRequest = {
+  ids: string[];
+};
+
+export type GetWorkoutsResponse = {
+  workouts: Workout[];
+};

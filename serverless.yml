@@ -56,6 +56,20 @@ functions:
           path: getAllExercises
           method: get
           cors: true
+  saveWorkout:
+    handler: src/workout_handlers.saveWorkout
+    events:
+      - http:
+          path: saveWorkout
+          method: post
+          cors: true
+  getWorkouts:
+    handler: src/workout_handlers.getWorkouts
+    events:
+      - http:
+          path: getWorkouts
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -88,6 +102,21 @@ resources:
           ReadCapacityUnits: 25
           WriteCapacityUnits: 25
         TableName: ${self:provider.environment.EXERCISE_TABLE}
+
+    WorkoutTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.WORKOUT_TABLE}
 
 plugins:
   - serverless-plugin-typescript
