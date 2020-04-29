@@ -8,6 +8,7 @@ provider:
     USER_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user
     EXERCISE_TABLE: ${self:service}-${opt:stage, self:provider.stage}-exercise
     WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout
+    USER_WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-workout
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -70,6 +71,13 @@ functions:
           path: getWorkouts
           method: post
           cors: true
+  getWorkoutsForUser:
+    handler: src/workout_handlers.getWorkoutsForUser
+    events:
+      - http:
+          path: getWorkoutsForUser
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -117,6 +125,21 @@ resources:
           ReadCapacityUnits: 25
           WriteCapacityUnits: 25
         TableName: ${self:provider.environment.WORKOUT_TABLE}
+
+    UserWorkoutTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.USER_WORKOUT_TABLE}
 
 plugins:
   - serverless-plugin-typescript

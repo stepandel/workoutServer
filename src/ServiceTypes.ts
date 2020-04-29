@@ -22,7 +22,9 @@ export type GetUserResponse = {
 export type Exercise = {
   id: string;
   bodyPart?: string;
-  musleGroup?: string;
+  muscleGroup?: string;
+  isValidated?: boolean;
+  popularity?: number;
 };
 
 export type SaveExerciseRequest = {
@@ -58,6 +60,7 @@ export type Set = {
 
 export type SaveWorkoutRequest = {
   workout: Workout;
+  userId: string;
 };
 
 export type GetWorkoutsRequest = {
@@ -65,5 +68,13 @@ export type GetWorkoutsRequest = {
 };
 
 export type GetWorkoutsResponse = {
+  workouts: Workout[];
+};
+
+export type GetWorkoutsForUserRequest = {
+  userId: string;
+};
+
+export type GetWorkoutsForUserResponse = {
   workouts: Workout[];
 };
