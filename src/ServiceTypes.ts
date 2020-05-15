@@ -49,6 +49,7 @@ export type Workout = {
   focus?: string;
   type?: string;
   sets: Set[];
+  rounds?: Round[];
 };
 
 export type Set = {
@@ -56,6 +57,11 @@ export type Set = {
   time?: number;
   reps?: number;
   sets?: number;
+};
+
+export type Round = {
+  id: number;
+  sets?: Set[];
 };
 
 export type SaveWorkoutRequest = {
