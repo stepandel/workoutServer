@@ -9,6 +9,7 @@ provider:
     EXERCISE_TABLE: ${self:service}-${opt:stage, self:provider.stage}-exercise
     WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout
     USER_WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-workout
+    WORKOUT_LOG_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout-log
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -78,6 +79,20 @@ functions:
           path: getWorkoutsForUser
           method: post
           cors: true
+  saveCompletedWorkout:
+    handler: src/workoutLog_handlers.saveCompletedWorkout
+    events:
+      - http:
+          path: saveCompletedWorkout
+          method: post
+          cors: true
+  getWorkoutLogForUser:
+    handler: src/workoutLog_handlers.getWorkoutLogForUser
+    events:
+      - http:
+          path: getWorkoutLogForUser
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -140,6 +155,25 @@ resources:
           ReadCapacityUnits: 25
           WriteCapacityUnits: 25
         TableName: ${self:provider.environment.USER_WORKOUT_TABLE}
+
+    WorkoutLogTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: wlId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: wlId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.WORKOUT_LOG_TABLE}
 
 plugins:
   - serverless-plugin-typescript

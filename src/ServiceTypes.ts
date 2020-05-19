@@ -84,3 +84,30 @@ export type GetWorkoutsForUserRequest = {
 export type GetWorkoutsForUserResponse = {
   workouts: Workout[];
 };
+
+export type CompletedWorkout = {
+  wlId: string;
+  workout: Workout;
+  time: number;
+  completionTs: number;
+};
+
+export type CompletedWorkoutShort = {
+  wlId: string;
+  workoutId: string;
+  time: number;
+  completionTs: number;
+};
+
+export type SaveCompletedWorkoutRequest = {
+  completedWorkout: CompletedWorkoutShort;
+  userId: string;
+};
+
+export type GetWorkoutLogForUserRequest = {
+  userId: string;
+};
+
+export type GetWorkoutLogForUserResponse = {
+  completedWorkouts: CompletedWorkout[];
+};
