@@ -29,6 +29,15 @@ export type Exercise = {
 
 export type SaveExerciseRequest = {
   exercise: Exercise;
+  userId: string;
+};
+
+export type GetExercisesForUserRequest = {
+  userId: string;
+};
+
+export type GetExercisesForUserResponse = {
+  exercises: Exercise[];
 };
 
 export type GetExercisesRequest = {

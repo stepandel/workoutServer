@@ -19,7 +19,7 @@ async function checkIfExistingExercise(id: string): Promise<Bool> {
   return queryOutput.Count > 0;
 }
 
-export async function saveNewExercise(exercise: Exercise) {
+export async function saveNewExercise(exercise: Exercise, userId: string) {
   let isExistingExercise = await checkIfExistingExercise(exercise.id);
 
   if (!isExistingExercise) {
@@ -28,7 +28,24 @@ export async function saveNewExercise(exercise: Exercise) {
       TableName: process.env.EXERCISE_TABLE,
       Item: exercise,
     };
-    return dynamoDB.put(putRequest).promise();
+    let putRequestPromise = dynamoDB.put(putRequest).promise();
+
+    // Add exercise to user
+    let updateUserExerciseRequest: DynamoDB.DocumentClient.UpdateItemInput = {
+      TableName: process.env.USER_EXERCISE_TABLE,
+      Key: {
+        userId: userId,
+      },
+      UpdateExpression: 'ADD exercises :exercise',
+      ExpressionAttributeValues: {
+        ':exercise': dynamoDB.createSet([exercise.id]),
+      },
+    };
+    let updateUserExercisesPromise = dynamoDB
+      .update(updateUserExerciseRequest)
+      .promise();
+
+    return { ...putRequestPromise, ...updateUserExercisesPromise };
   } else {
     return;
   }
@@ -47,4 +64,42 @@ export async function getExercise(id: string): Promise<Exercise> {
   console.log('Got Exercise: ', JSON.stringify(getResult.Item));
 
   return getResult.Item ? (getResult.Item as Exercise) : undefined;
+}
+
+async function getExerciseIdsForUser(userId: string): Promise<string[]> {
+  let getRequest: DynamoDB.DocumentClient.GetItemInput = {
+    TableName: process.env.USER_EXERCISE_TABLE,
+    Key: {
+      userId: userId,
+    },
+  };
+
+  let getResult = await dynamoDB.get(getRequest).promise();
+
+  return getResult.Item && getResult.Item['exercises']
+    ? getResult.Item['exercises'].values
+    : ([] as string[]);
+}
+
+export async function getExercisesForUserId(
+  userId: string
+): Promise<Exercise[]> {
+  let exerciseIds = await getExerciseIdsForUser(userId);
+
+  console.log(`Exercises for userId ${userId}: `, exerciseIds);
+
+  // Pull exercise data from Exercises Table
+  let exercises = exerciseIds.reduce(async (promise, id) => {
+    let res = await promise;
+
+    let result = await getExercise(id);
+    if (result) {
+      res.push(result);
+    }
+
+    return res;
+  }, Promise.resolve([] as Exercise[]));
+
+  console.log('Exercises to return:', JSON.stringify(exercises));
+  return exercises;
 }

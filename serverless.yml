@@ -7,6 +7,7 @@ provider:
   environment:
     USER_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user
     EXERCISE_TABLE: ${self:service}-${opt:stage, self:provider.stage}-exercise
+    USER_EXERCISE_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-exercise
     WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout
     USER_WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-workout
     WORKOUT_LOG_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout-log
@@ -44,13 +45,20 @@ functions:
           path: saveExercise
           method: post
           cors: true
+  getExercisesForUser:
+    handler: src/exercise_handlers.getExercisesForUser
+    events:
+      - http:
+          path: getExercisesForUser
+          method: post
+          cors: true
   getExercises:
     handler: src/exercise_handlers.getExercises
     events:
       - http:
           path: getExercises
           method: post
-          cosrs: true
+          cors: true
   getAllExercises:
     handler: src/exercise_handlers.getAllExercises
     events:
@@ -125,6 +133,21 @@ resources:
           ReadCapacityUnits: 25
           WriteCapacityUnits: 25
         TableName: ${self:provider.environment.EXERCISE_TABLE}
+
+    UserExerciseTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.USER_EXERCISE_TABLE}
 
     WorkoutTable:
       Type: 'AWS::DynamoDB::Table'

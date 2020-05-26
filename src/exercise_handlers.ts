@@ -5,11 +5,24 @@ import {
   GetExercisesResponse,
   GetAllExercisesResponse,
   Exercise,
+  GetExercisesForUserRequest,
+  GetExercisesForUserResponse,
 } from './ServiceTypes';
-import { saveNewExercise, getExercise } from './ExerciseHelpers';
+import {
+  saveNewExercise,
+  getExercise,
+  getExercisesForUserId,
+} from './ExerciseHelpers';
 
 async function saveExercise(r: SaveExerciseRequest) {
-  return saveNewExercise(r.exercise);
+  return saveNewExercise(r.exercise, r.userId);
+}
+
+async function getExercisesForUser(
+  r: GetExercisesForUserRequest
+): Promise<GetExercisesForUserResponse> {
+  let exercises = await getExercisesForUserId(r.userId);
+  return { exercises: exercises };
 }
 
 async function getExercises(
@@ -35,6 +48,7 @@ async function getAllExercises(): Promise<GetAllExercisesResponse> {
 
 module.exports = {
   saveExercise: lambdaWrap(saveExercise),
+  getExercisesForUser: lambdaWrap(getExercisesForUser),
   getExercises: lambdaWrap(getExercises),
   getAllExercises: lambdaGetWrap(getAllExercises),
 };
