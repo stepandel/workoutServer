@@ -57,7 +57,6 @@ export type Workout = {
   name: string;
   focus?: string;
   type?: string;
-  sets: Set[];
   rounds?: Round[];
 };
 
@@ -65,7 +64,6 @@ export type Set = {
   exId: string;
   time?: number;
   reps?: number;
-  sets?: number;
 };
 
 export type Round = {
