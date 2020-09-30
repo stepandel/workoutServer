@@ -1,7 +1,9 @@
 import { DynamoDB } from 'aws-sdk';
-import { UserData } from './ServiceTypes';
+import { User, UserData } from './ServiceTypes';
 
 const dynamoDB = new DynamoDB.DocumentClient();
+
+const bcrypt = require('bcryptjs');
 
 async function checkIfExistingUser(userId): Promise<boolean> {
   let queryParams: DynamoDB.DocumentClient.QueryInput = {
@@ -16,6 +18,50 @@ async function checkIfExistingUser(userId): Promise<boolean> {
   console.log('Query output: ', JSON.stringify(queryOutput));
 
   return queryOutput.Count > 0;
+}
+
+export async function saveUserPassword(user: User) {
+  let userId = user.id;
+  let isExistingUser = await checkIfExistingUser(userId);
+
+  if (isExistingUser) {
+    throw new Error('User Already Exists!');
+  } else {
+    if (user.password) {
+      let hashedPassword = await bcrypt.hashSync(user.password, 10);
+
+      let putRequest: DynamoDB.DocumentClient.PutItemInput = {
+        TableName: process.env.USER_TABLE,
+        Item: {
+          id: user.id,
+          password: hashedPassword,
+        },
+      };
+      return dynamoDB.put(putRequest).promise();
+    }
+  }
+}
+
+async function getUserPassword(userId: string) {
+  let getRequest: DynamoDB.DocumentClient.GetItemInput = {
+    TableName: process.env.USER_TABLE,
+    Key: {
+      id: userId,
+    },
+  };
+  let result = await dynamoDB.get(getRequest).promise();
+  return (result.Item as User) || undefined;
+}
+
+export async function checkPassword(user: User): Promise<boolean> {
+  let userId = user.id;
+  let savedUser = await getUserPassword(userId);
+
+  if (savedUser && savedUser.password) {
+    return bcrypt.compareSync(user.password, savedUser.password);
+  } else {
+    throw new Error("User Doesn't Exist!");
+  }
 }
 
 export async function saveOrUpdateUser(userData: UserData) {

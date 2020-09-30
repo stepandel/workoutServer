@@ -1,3 +1,22 @@
+import { bool } from 'aws-sdk/clients/signer';
+
+export type User = {
+  id: string;
+  password: string;
+};
+
+export type SaveNewUserRequest = {
+  user: User;
+};
+
+export type CheckUserRequest = {
+  user: User;
+};
+
+export type CheckUserResponse = {
+  success: bool;
+};
+
 export type UserData = {
   id: string;
   name?: string;
@@ -67,8 +86,8 @@ export type Set = {
 };
 
 export type Round = {
-  id: number;
-  sets?: Set[];
+  id: string;
+  sets?: Set[][];
 };
 
 export type SaveWorkoutRequest = {

@@ -24,6 +24,20 @@ provider:
       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:service}-${opt:stage, self:provider.stage}-*'
 
 functions:
+  saveNewUser:
+    handler: src/user_handlers.saveNewUser
+    events:
+      - http:
+          path: saveNewUser
+          method: post
+          cors: true
+  checkUser:
+    handler: src/user_handlers.checkUser
+    events:
+      - http:
+          path: checkUser
+          method: post
+          cors: true
   saveUser:
     handler: src/user_handlers.saveUser
     events:
