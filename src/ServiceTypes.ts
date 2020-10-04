@@ -19,11 +19,15 @@ export type CheckUserResponse = {
 
 export type UserData = {
   id: string;
-  name?: string;
-  gender?: string;
-  age?: string;
-  workouts?: [string];
-  exercises?: [string];
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  city?: string;
+  state?: string;
+  sport?: string;
+  weight?: number;
+  birthDate?: Date;
+  sex?: string;
 };
 
 export type SaveUserRequest = {
