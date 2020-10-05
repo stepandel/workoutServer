@@ -1,4 +1,5 @@
 import { DynamoDB } from 'aws-sdk';
+import { putImageToS3 } from './S3Utils';
 import { User, UserData } from './ServiceTypes';
 
 const dynamoDB = new DynamoDB.DocumentClient();
@@ -123,4 +124,9 @@ export async function getUserData(userId: string): Promise<UserData> {
   } catch (err) {
     throw new Error(err);
   }
+}
+
+export async function uploadUserImage(image: string, userId: string) {
+  let imageBuffer = Buffer.from(image, 'base64');
+  return putImageToS3(userId, imageBuffer);
 }

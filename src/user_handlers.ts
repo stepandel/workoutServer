@@ -6,12 +6,14 @@ import {
   SaveNewUserRequest,
   CheckUserRequest,
   CheckUserResponse,
+  UpdateUserImageReqest,
 } from './ServiceTypes';
 import {
   saveOrUpdateUser,
   getUserData,
   saveUserPassword,
   checkPassword,
+  uploadUserImage,
 } from './UserHelpers';
 
 async function saveNewUser(r: SaveNewUserRequest) {
@@ -34,9 +36,14 @@ async function getUser(r: GetUserRequest): Promise<GetUserResponse> {
   return { user: userData };
 }
 
+async function updateUserImage(r: UpdateUserImageReqest) {
+  return uploadUserImage(r.userImage, r.userId);
+}
+
 module.exports = {
   saveUser: lambdaWrap(saveUser),
   getUser: lambdaWrap(getUser),
   saveNewUser: lambdaWrap(saveNewUser),
   checkUser: lambdaWrap(checkUser),
+  updateUserImage: lambdaWrap(updateUserImage),
 };

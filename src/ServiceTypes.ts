@@ -42,6 +42,11 @@ export type GetUserResponse = {
   user: UserData;
 };
 
+export type UpdateUserImageReqest = {
+  userId: string;
+  userImage: string;
+};
+
 export type Exercise = {
   id: string;
   bodyPart?: string;
