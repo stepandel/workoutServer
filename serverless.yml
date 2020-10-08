@@ -11,6 +11,7 @@ provider:
     WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout
     USER_WORKOUT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-workout
     WORKOUT_LOG_TABLE: ${self:service}-${opt:stage, self:provider.stage}-workout-log
+    USER_STATS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user-stats
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -131,6 +132,20 @@ functions:
           path: getWorkoutLogForUser
           method: post
           cors: true
+  saveStatsForUser:
+    handler: src/stats_handlers.saveStatsForUser
+    events:
+      - http:
+          path: saveStatsForUser
+          method: post
+          cors: true
+  getStatsForUser:
+    handler: src/stats_handlers.getStatsForUser
+    events:
+      - http:
+          path: getStatsForUser
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -227,6 +242,21 @@ resources:
           ReadCapacityUnits: 25
           WriteCapacityUnits: 25
         TableName: ${self:provider.environment.WORKOUT_LOG_TABLE}
+
+    UserStatsTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.USER_STATS_TABLE}
 
 plugins:
   - serverless-plugin-typescript

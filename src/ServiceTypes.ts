@@ -1,4 +1,5 @@
 import { bool } from 'aws-sdk/clients/signer';
+import { AnyARecord } from 'dns';
 
 export type User = {
   id: string;
@@ -145,4 +146,17 @@ export type GetWorkoutLogForUserRequest = {
 
 export type GetWorkoutLogForUserResponse = {
   completedWorkouts: CompletedWorkout[];
+};
+
+export type SaveStatsRequest = {
+  userId: string;
+  stats: {};
+};
+
+export type GetStatsRequest = {
+  userId: string;
+};
+
+export type GetStatsResponse = {
+  stats: {};
 };
