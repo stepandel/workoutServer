@@ -52,7 +52,7 @@ export async function getCompletedWorkoutsForUser(
 ): Promise<CompletedWorkout[]> {
   let workoutLogEntries = await getWorkoutLogEntriesForUser(userId);
 
-  return workoutLogEntries.reduce(async (promise, item) => {
+  let workouts = await workoutLogEntries.reduce(async (promise, item) => {
     // pull workout from WorkoutTable
     let workout = await getWorkout(item.workoutId);
 
@@ -73,4 +73,6 @@ export async function getCompletedWorkoutsForUser(
       return res;
     }
   }, Promise.resolve([]));
+
+  return workouts.sort((a, b) => a.completionTs - b.completionTs);
 }
