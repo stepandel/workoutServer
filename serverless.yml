@@ -146,6 +146,13 @@ functions:
           path: getStatsForUser
           method: post
           cors: true
+  getCompletedWorkoutsAndStatsForUser:
+    handler: src/stats_handlers.getCompletedWorkoutsAndStatsForUser
+    events:
+      - http:
+          path: getCompletedWorkoutsAndStatsForUser
+          method: post
+          cors: true
 
 resources:
   Resources:

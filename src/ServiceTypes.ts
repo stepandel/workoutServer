@@ -93,6 +93,7 @@ export type Set = {
   exId: string;
   time?: number;
   reps?: number;
+  weight?: number;
 };
 
 export type Round = {
@@ -148,9 +149,25 @@ export type GetWorkoutLogForUserResponse = {
   completedWorkouts: CompletedWorkout[];
 };
 
+export type Stats = {
+  totalWorkoutsCompleted: number
+  totalWeightLifted: number
+  totalRepsCompleted: number
+  totalSetsCompleted: number
+  totalTimeWorkingout: number
+}
+
+export type WeeklyStats = {
+  workoutsCompleted: number
+  weightLifted: number
+  repsCompleted: number
+  setsCompleted: number
+  timeWorkingout: number
+}
+
 export type SaveStatsRequest = {
   userId: string;
-  stats: {};
+  stats: Stats;
 };
 
 export type GetStatsRequest = {
@@ -158,5 +175,16 @@ export type GetStatsRequest = {
 };
 
 export type GetStatsResponse = {
-  stats: {};
+  stats: Stats;
 };
+
+export type GetWorkoutsAndStatsForUserRequest = {
+  userId: string
+  timezoneOffset: number
+}
+
+export type GetWorkoutsAndStatsForUserResponse = {
+  completedWorkouts: CompletedWorkout[]
+  stats: Stats
+  weeklyStats: WeeklyStats
+}
