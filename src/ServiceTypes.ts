@@ -125,14 +125,14 @@ export type CompletedWorkout = {
   wlId: string;
   workout: Workout;
   time: number;
-  completionTs: number;
+  startTS: number;
 };
 
 export type CompletedWorkoutShort = {
   wlId: string;
   workoutId: string;
   time: number;
-  completionTs: number;
+  startTS: number;
 };
 
 export type SaveCompletedWorkoutRequest = {

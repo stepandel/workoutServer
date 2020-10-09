@@ -11,7 +11,7 @@ type WorkoutLogEntry = {
   wlId: string;
   workoutId: string;
   time: number;
-  completionTs: number;
+  startTS: number;
 };
 
 export async function saveToWorkoutLog(
@@ -63,7 +63,7 @@ export async function getCompletedWorkoutsForUser(
         wlId: item.wlId,
         workout: workout,
         time: item.time,
-        completionTs: item.completionTs,
+        startTS: item.startTS,
       };
 
       res.push(completedWorkout);
@@ -74,5 +74,5 @@ export async function getCompletedWorkoutsForUser(
     }
   }, Promise.resolve([]));
 
-  return workouts.sort((a, b) => a.completionTs - b.completionTs);
+  return workouts.sort((a, b) => a.startTS - b.startTS);
 }
