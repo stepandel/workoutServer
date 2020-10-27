@@ -149,6 +149,11 @@ export type GetWorkoutLogForUserResponse = {
   completedWorkouts: CompletedWorkout[];
 };
 
+export type DeleteWorkoutFromLogRequest = {
+  userId: string;
+  wlId: string;
+}
+
 export type Stats = {
   totalWorkoutsCompleted: number
   totalWeightLifted: number

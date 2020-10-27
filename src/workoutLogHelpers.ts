@@ -78,3 +78,16 @@ export async function getCompletedWorkoutsForUser(
 
   return workouts.sort((a, b) => a.startTS - b.startTS);
 }
+
+export async function deleteWorkoutLogItem(userId: string, wlId: string) {
+
+  let deleteRequest: DynamoDB.DocumentClient.DeleteItemInput = {
+    TableName: workoutLogTable,
+    Key: {
+      userId: userId,
+      wlId: wlId
+    }
+  }
+
+  return dynamoDB.delete(deleteRequest).promise()
+}

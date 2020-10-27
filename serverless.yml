@@ -132,6 +132,13 @@ functions:
           path: getWorkoutLogForUser
           method: post
           cors: true
+  deleteWorkoutFromLog:
+    handler: src/workoutLog_handlers.deleteWorkoutFromLog
+    events:
+      - http:
+          path: deleteWorkoutFromLog
+          method: post
+          cors: true
   saveStatsForUser:
     handler: src/stats_handlers.saveStatsForUser
     events:
