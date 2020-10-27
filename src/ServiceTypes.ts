@@ -1,5 +1,4 @@
 import { bool } from 'aws-sdk/clients/signer';
-import { AnyARecord } from 'dns';
 
 export type User = {
   id: string;
@@ -85,6 +84,7 @@ export type Workout = {
   id: string;
   name: string;
   focus?: string;
+  notes?: string;
   type?: string;
   rounds?: Round[];
 };

@@ -137,6 +137,7 @@ export async function getWorkoutsForUserId(userId: string): Promise<Workout[]> {
 
     let result = await getWorkoutData(id);
     if (result) {
+      result.notes = result.notes || ""
       res.push(result);
     }
 

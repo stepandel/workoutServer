@@ -59,6 +59,8 @@ export async function getCompletedWorkoutsForUser(
     let res = await promise;
 
     if (workout) {
+      if (!workout.notes) workout.notes = ""
+
       let completedWorkout: CompletedWorkout = {
         wlId: item.wlId,
         workout: workout,
