@@ -5,6 +5,10 @@ export type User = {
   password: string;
 };
 
+export type SaveNewUserWithoutAccountRequest = {
+  id: string;
+}
+
 export type SaveNewUserRequest = {
   user: User;
 };
@@ -90,6 +94,7 @@ export type Workout = {
 };
 
 export type Set = {
+  id: string;
   exId: string;
   time?: number;
   reps?: number;

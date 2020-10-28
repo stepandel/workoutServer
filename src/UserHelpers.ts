@@ -6,6 +6,23 @@ const dynamoDB = new DynamoDB.DocumentClient();
 
 const bcrypt = require('bcryptjs');
 
+export async function saveNewUserId(id: string) {
+  let isExistingUser = await checkIfExistingUser(id);
+
+  if (isExistingUser) {
+    throw new Error('User Already Exists!');
+  } else {
+    let putRequest: DynamoDB.DocumentClient.PutItemInput = {
+      TableName: process.env.USER_TABLE,
+      Item: {
+        id: id,
+        didCreateAccount: false,
+      },
+    };
+    return dynamoDB.put(putRequest).promise();
+  }
+}
+
 async function checkIfExistingUser(userId): Promise<boolean> {
   let queryParams: DynamoDB.DocumentClient.QueryInput = {
     TableName: process.env.USER_TABLE,
@@ -36,6 +53,7 @@ export async function saveUserPassword(user: User) {
         Item: {
           id: user.id,
           password: hashedPassword,
+          didCreateAccount: true,
         },
       };
       return dynamoDB.put(putRequest).promise();

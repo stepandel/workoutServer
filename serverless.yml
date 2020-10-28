@@ -34,6 +34,13 @@ provider:
       Resource: '*'
 
 functions:
+  saveNewUserWithoutAccount:
+    handler: src/user_handlers.saveNewUserWithoutAccount
+    events:
+      - http:
+          path: saveNewUserWithoutAccount
+          method: post
+          cors: true
   saveNewUser:
     handler: src/user_handlers.saveNewUser
     events:

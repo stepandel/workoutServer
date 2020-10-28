@@ -7,6 +7,7 @@ import {
   CheckUserRequest,
   CheckUserResponse,
   UpdateUserImageReqest,
+  SaveNewUserWithoutAccountRequest,
 } from './ServiceTypes';
 import {
   saveOrUpdateUser,
@@ -14,7 +15,12 @@ import {
   saveUserPassword,
   checkPassword,
   uploadUserImage,
+  saveNewUserId,
 } from './UserHelpers';
+
+async function saveNewUserWithoutAccount(r: SaveNewUserWithoutAccountRequest) {
+  return saveNewUserId(r.id)
+}
 
 async function saveNewUser(r: SaveNewUserRequest) {
   return saveUserPassword(r.user);
@@ -41,6 +47,7 @@ async function updateUserImage(r: UpdateUserImageReqest) {
 }
 
 module.exports = {
+  saveNewUserWithoutAccount: lambdaWrap(saveNewUserWithoutAccount),
   saveUser: lambdaWrap(saveUser),
   getUser: lambdaWrap(getUser),
   saveNewUser: lambdaWrap(saveNewUser),

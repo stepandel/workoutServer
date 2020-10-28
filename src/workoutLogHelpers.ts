@@ -1,4 +1,4 @@
-import { CompletedWorkout, CompletedWorkoutShort } from './ServiceTypes';
+import { CompletedWorkout, CompletedWorkoutShort, Round, Workout } from './ServiceTypes';
 import { DynamoDB } from 'aws-sdk';
 import { getWorkout } from './WorkoutHelpers';
 
@@ -59,11 +59,19 @@ export async function getCompletedWorkoutsForUser(
     let res = await promise;
 
     if (workout) {
-      if (!workout.notes) workout.notes = ""
+
+      let cleanWorkout: Workout = {
+        id: workout.id,
+        name: workout.name,
+        focus: workout.focus,
+        notes: workout.notes || "",
+        type: workout.type,
+        rounds: workout.rounds as Round[]
+      }
 
       let completedWorkout: CompletedWorkout = {
         wlId: item.wlId,
-        workout: workout,
+        workout: cleanWorkout,
         time: item.time,
         startTS: item.startTS,
       };
