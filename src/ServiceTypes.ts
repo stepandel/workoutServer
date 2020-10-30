@@ -133,6 +133,11 @@ export type GetWorkoutsForUserResponse = {
   workouts: Workout[];
 };
 
+export type DeleteWorkoutsRequest = {
+  userId: string;
+  workoutIds: string[];
+}
+
 export type CompletedWorkout = {
   wlId: string;
   workout: Workout;

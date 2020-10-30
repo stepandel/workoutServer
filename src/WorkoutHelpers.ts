@@ -188,3 +188,33 @@ export async function deleteUserFromWorkouts(userId: string) {
 
   return dynamoDB.delete(deleteRequest).promise()
 }
+
+export async function deleteWorkouts(workoutIds: string[]) {
+  let deleteRequests = workoutIds.map( workoutId => {
+    return {DeleteRequest: {
+      Key: {
+        id: workoutId
+      }
+    }}
+  })
+  let batchDeleteRequest: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [workoutTable]: deleteRequests
+    }
+  }
+  return dynamoDB.batchWrite(batchDeleteRequest).promise()
+}
+
+export async function deleteWorkoutsFromUser(userId: string, workoutIds: string[]) {
+  let updateRequest: DynamoDB.DocumentClient.UpdateItemInput = {
+    TableName: userWorkoutTable,
+    Key: {
+      userId: userId
+    },
+    UpdateExpression: "DELETE workouts :workouts",
+    ExpressionAttributeValues: {
+      ":workouts": dynamoDB.createSet(workoutIds)
+    }
+  }
+  return dynamoDB.update(updateRequest).promise()
+}

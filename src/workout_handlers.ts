@@ -6,11 +6,14 @@ import {
   Workout,
   GetWorkoutsForUserRequest,
   GetWorkoutsForUserResponse,
+  DeleteWorkoutsRequest,
 } from './ServiceTypes';
 import {
   saveOrUpdateWorkout,
   getWorkout,
   getWorkoutsForUserId,
+  deleteWorkouts,
+  deleteWorkoutsFromUser,
 } from './WorkoutHelpers';
 
 async function saveWorkout(r: SaveWorkoutRequest) {
@@ -41,8 +44,16 @@ async function getWorkoutsForUser(
   return { workouts: await workouts };
 }
 
+async function deleteUserWorkouts(r: DeleteWorkoutsRequest) {
+  let workoutsPromise = deleteWorkouts(r.workoutIds);
+  let userWorkoutsPromise = deleteWorkoutsFromUser(r.userId, r.workoutIds);
+
+  return {...workoutsPromise, ...userWorkoutsPromise}
+}
+
 module.exports = {
   saveWorkout: lambdaWrap(saveWorkout),
   getWorkouts: lambdaWrap(getWorkouts),
   getWorkoutsForUser: lambdaWrap(getWorkoutsForUser),
+  deleteUserWorkouts: lambdaWrap(deleteUserWorkouts),
 };
