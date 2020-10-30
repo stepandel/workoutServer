@@ -33,7 +33,7 @@ export async function saveToWorkoutLog(
   return dynamoDB.put(putRequest).promise();
 }
 
-async function getWorkoutLogEntriesForUser(userId): Promise<WorkoutLogEntry[]> {
+export async function getWorkoutLogEntriesForUser(userId): Promise<WorkoutLogEntry[]> {
   let queryRequest: DynamoDB.DocumentClient.QueryInput = {
     TableName: workoutLogTable,
     KeyConditionExpression: 'userId = :userId',
@@ -98,4 +98,54 @@ export async function deleteWorkoutLogItem(userId: string, wlId: string) {
   }
 
   return dynamoDB.delete(deleteRequest).promise()
+}
+
+export async function batchPutToWorkoutLog(workoutLogEntries: WorkoutLogEntry[]) {
+  let putRequestItems = workoutLogEntries.map( item => {
+    return {PutRequest: {
+      Item: item
+    }}
+  })
+
+  let batchWriteRequest: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [workoutLogTable]: putRequestItems
+    }
+  }
+
+  return doBatchWriteItems(batchWriteRequest);
+}
+
+export async function batchDeleteFromWorkoutLog(workoutLogEntries: WorkoutLogEntry[]) {
+  let deleteRequestItmes = workoutLogEntries.map( item => {
+    return {DeleteRequest: {
+        Key: {
+          userId: item.userId,
+          wlId: item.wlId,
+        }
+      }
+      
+    }
+  })
+
+  let batchWriteRequest: DynamoDB.DocumentClient.BatchWriteItemInput = {
+    RequestItems: {
+      [workoutLogTable]: deleteRequestItmes
+    }
+  }
+
+  return doBatchWriteItems(batchWriteRequest);
+}
+
+async function doBatchWriteItems(batchWriteRequest: DynamoDB.DocumentClient.BatchWriteItemInput) {
+  try {
+    let batchWriteResponse = await dynamoDB.batchWrite(batchWriteRequest).promise();
+    if (batchWriteResponse.UnprocessedItems && batchWriteResponse.UnprocessedItems[workoutLogTable] && batchWriteResponse.UnprocessedItems[workoutLogTable].length > 0) {
+      console.log(`Batch write returned uprocessed items: ${JSON.stringify(batchWriteResponse.UnprocessedItems)}`)
+      batchWriteRequest.RequestItems = batchWriteResponse.UnprocessedItems
+      doBatchWriteItems(batchWriteRequest);
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }

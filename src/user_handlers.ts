@@ -8,6 +8,7 @@ import {
   CheckUserResponse,
   UpdateUserImageReqest,
   SaveNewUserWithoutAccountRequest,
+  MergeUsersRequest,
 } from './ServiceTypes';
 import {
   saveOrUpdateUser,
@@ -16,6 +17,7 @@ import {
   checkPassword,
   uploadUserImage,
   saveNewUserId,
+  mergeUserData,
 } from './UserHelpers';
 
 async function saveNewUserWithoutAccount(r: SaveNewUserWithoutAccountRequest) {
@@ -23,7 +25,7 @@ async function saveNewUserWithoutAccount(r: SaveNewUserWithoutAccountRequest) {
 }
 
 async function saveNewUser(r: SaveNewUserRequest) {
-  return saveUserPassword(r.user);
+  return saveUserPassword(r.user, r.deviceId);
 }
 
 async function checkUser(r: CheckUserRequest): Promise<CheckUserResponse> {
@@ -46,6 +48,10 @@ async function updateUserImage(r: UpdateUserImageReqest) {
   return uploadUserImage(r.userImage, r.userId);
 }
 
+async function mergeUsers(r: MergeUsersRequest) {
+  return mergeUserData(r.fromUserId, r.toUserId)
+}
+
 module.exports = {
   saveNewUserWithoutAccount: lambdaWrap(saveNewUserWithoutAccount),
   saveUser: lambdaWrap(saveUser),
@@ -53,4 +59,5 @@ module.exports = {
   saveNewUser: lambdaWrap(saveNewUser),
   checkUser: lambdaWrap(checkUser),
   updateUserImage: lambdaWrap(updateUserImage),
+  mergeUsers: lambdaWrap(mergeUsers),
 };

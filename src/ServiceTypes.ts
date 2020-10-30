@@ -11,6 +11,7 @@ export type SaveNewUserWithoutAccountRequest = {
 
 export type SaveNewUserRequest = {
   user: User;
+  deviceId?: string;
 };
 
 export type CheckUserRequest = {
@@ -50,6 +51,11 @@ export type UpdateUserImageReqest = {
   userId: string;
   userImage: string;
 };
+
+export type MergeUsersRequest = {
+  fromUserId: string;
+  toUserId: string;
+}
 
 export type Exercise = {
   id: string;

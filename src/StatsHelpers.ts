@@ -4,11 +4,15 @@ import { getCompletedWorkoutsForUser } from './workoutLogHelpers';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
-export async function saveStats(userId: string, stats: {}) {
-  let statsTableEntry = { userId: userId, ...stats };
+const userStatsTable = process.env.USER_STATS_TABLE;
+
+export async function saveStats(userId: string, stats: Stats) {
+  let statsTableEntry = { ...stats, ...{userId: userId} };
+
+  console.log({statsTableEntry});
 
   let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-    TableName: process.env.USER_STATS_TABLE,
+    TableName: userStatsTable,
     Item: statsTableEntry,
   };
   return dynamoDB.put(putRequest).promise();
@@ -16,7 +20,7 @@ export async function saveStats(userId: string, stats: {}) {
 
 export async function getStats(userId: string): Promise<Stats> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.USER_STATS_TABLE,
+    TableName: userStatsTable,
     Key: {
       userId: userId,
     },
@@ -70,4 +74,15 @@ function getMonday(d: Date) {
   d.setMinutes(0)
   d.setSeconds(0)
   return d;
+}
+
+export async function deleteUserFromStats(userId: string) {
+  let deleteRequest: DynamoDB.DocumentClient.DeleteItemInput = {
+    TableName: userStatsTable,
+    Key: {
+      userId: userId
+    }
+  }
+
+  return dynamoDB.delete(deleteRequest).promise()
 }

@@ -1,10 +1,16 @@
 import { DynamoDB } from 'aws-sdk';
 import { putImageToS3 } from './S3Utils';
 import { User, UserData } from './ServiceTypes';
+import { addExercisesToUser, deleteUserFromExercises, getExerciseSet } from './ExerciseHelpers'
+import { addWorkoutsToUser, deleteUserFromWorkouts, getWorkoutIdSet } from './WorkoutHelpers';
+import { batchDeleteFromWorkoutLog, batchPutToWorkoutLog, getWorkoutLogEntriesForUser } from './workoutLogHelpers';
+import { deleteUserFromStats, getStats, saveStats } from './StatsHelpers';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
 const bcrypt = require('bcryptjs');
+
+const userTable = process.env.USER_TABLE
 
 export async function saveNewUserId(id: string) {
   let isExistingUser = await checkIfExistingUser(id);
@@ -13,7 +19,7 @@ export async function saveNewUserId(id: string) {
     throw new Error('User Already Exists!');
   } else {
     let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-      TableName: process.env.USER_TABLE,
+      TableName: userTable,
       Item: {
         id: id,
         didCreateAccount: false,
@@ -25,7 +31,7 @@ export async function saveNewUserId(id: string) {
 
 async function checkIfExistingUser(userId): Promise<boolean> {
   let queryParams: DynamoDB.DocumentClient.QueryInput = {
-    TableName: process.env.USER_TABLE,
+    TableName: userTable,
     KeyConditionExpression: 'id = :userId',
     ExpressionAttributeValues: {
       ':userId': userId,
@@ -38,7 +44,7 @@ async function checkIfExistingUser(userId): Promise<boolean> {
   return queryOutput.Count > 0;
 }
 
-export async function saveUserPassword(user: User) {
+export async function saveUserPassword(user: User, deviceId?: string) {
   let userId = user.id;
   let isExistingUser = await checkIfExistingUser(userId);
 
@@ -49,15 +55,60 @@ export async function saveUserPassword(user: User) {
       let hashedPassword = await bcrypt.hashSync(user.password, 10);
 
       let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-        TableName: process.env.USER_TABLE,
+        TableName: userTable,
         Item: {
           id: user.id,
           password: hashedPassword,
           didCreateAccount: true,
         },
       };
-      return dynamoDB.put(putRequest).promise();
+
+      let putPromise = dynamoDB.put(putRequest).promise()
+
+      if (deviceId) {
+        let mergePromise = mergeUserData(deviceId, userId)
+        return { ...putPromise, ...mergePromise }
+      }
+
+      return putPromise
     }
+  }
+}
+
+export async function mergeUserData(fromUserId: string, toUserId: string) {
+  console.log("Merging data...")
+  // Exercises
+  let exerciseSet = await getExerciseSet(fromUserId);
+  if (exerciseSet) {
+    addExercisesToUser(toUserId, exerciseSet);
+    deleteUserFromExercises(fromUserId);
+  }
+
+  // Workouts
+  let workoutSet = await getWorkoutIdSet(fromUserId);
+  if (workoutSet) {
+    addWorkoutsToUser(toUserId, workoutSet);
+    deleteUserFromWorkouts(fromUserId);
+  }
+
+  // Workout Log
+  let workoutLogItems = await getWorkoutLogEntriesForUser(fromUserId);
+  if (workoutLogItems && workoutLogItems.length > 0) {
+      // Replace userIds
+    let newWorkoutLogItems = workoutLogItems.map( item => {
+      item.userId = toUserId
+      return item
+    })
+    batchPutToWorkoutLog(newWorkoutLogItems);
+    batchDeleteFromWorkoutLog(workoutLogItems);
+  }
+
+  // Stats
+  // TODO: - add together from and to user stats
+  let stats = await getStats(fromUserId);
+  if (stats && Object.keys(stats).length > 0) {
+    saveStats(toUserId, stats);
+    deleteUserFromStats(fromUserId);
   }
 }
 
@@ -107,7 +158,7 @@ export async function saveOrUpdateUser(userData: UserData) {
     // Update existring entry
     if (fieldsToUpdate > 0) {
       let updateRequest: DynamoDB.DocumentClient.UpdateItemInput = {
-        TableName: process.env.USER_TABLE,
+        TableName: userTable,
         Key: {
           id: userId,
         },
@@ -122,7 +173,7 @@ export async function saveOrUpdateUser(userData: UserData) {
   } else {
     // Put a new entry
     let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-      TableName: process.env.USER_TABLE,
+      TableName: userTable,
       Item: userData,
     };
     return dynamoDB.put(putRequest).promise();
@@ -131,7 +182,7 @@ export async function saveOrUpdateUser(userData: UserData) {
 
 export async function getUserData(userId: string): Promise<UserData> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.USER_TABLE,
+    TableName: userTable,
     Key: {
       id: userId,
     },

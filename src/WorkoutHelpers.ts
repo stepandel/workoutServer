@@ -3,9 +3,12 @@ import { Workout } from './ServiceTypes';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
+const workoutTable = process.env.WORKOUT_TABLE;
+const userWorkoutTable = process.env.USER_WORKOUT_TABLE;
+
 async function checkIfExistingWorkout(workoutId): Promise<boolean> {
   let queryParams: DynamoDB.DocumentClient.QueryInput = {
-    TableName: process.env.WORKOUT_TABLE,
+    TableName: workoutTable,
     KeyConditionExpression: 'id = :workoutId',
     ExpressionAttributeValues: {
       ':workoutId': workoutId,
@@ -38,7 +41,7 @@ async function updateWorkout(workout: Workout) {
   // Update existring entry
   if (fieldsToUpdate > 0) {
     let updateRequest: DynamoDB.DocumentClient.UpdateItemInput = {
-      TableName: process.env.WORKOUT_TABLE,
+      TableName: workoutTable,
       Key: {
         id: workout.id,
       },
@@ -61,14 +64,14 @@ export async function saveOrUpdateWorkout(workout: Workout, userId: string) {
   } else {
     // Put a new entry
     let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-      TableName: process.env.WORKOUT_TABLE,
+      TableName: workoutTable,
       Item: workout,
     };
     let putRequestPromise = dynamoDB.put(putRequest).promise();
 
     // Add workout to user
     let updateUserWorkoutsRequest: DynamoDB.DocumentClient.UpdateItemInput = {
-      TableName: process.env.USER_WORKOUT_TABLE,
+      TableName: userWorkoutTable,
       Key: {
         userId: userId,
       },
@@ -87,7 +90,7 @@ export async function saveOrUpdateWorkout(workout: Workout, userId: string) {
 
 export async function getWorkout(id: string): Promise<Workout> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.WORKOUT_TABLE,
+    TableName: workoutTable,
     Key: {
       id: id,
     },
@@ -102,7 +105,7 @@ export async function getWorkout(id: string): Promise<Workout> {
 
 async function getWorkoutIdsForUser(userId: string): Promise<string[]> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.USER_WORKOUT_TABLE,
+    TableName: userWorkoutTable,
     Key: {
       userId: userId,
     },
@@ -117,7 +120,7 @@ async function getWorkoutIdsForUser(userId: string): Promise<string[]> {
 
 async function getWorkoutData(workoutId: string): Promise<Workout> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.WORKOUT_TABLE,
+    TableName: workoutTable,
     Key: {
       id: workoutId,
     },
@@ -146,4 +149,42 @@ export async function getWorkoutsForUserId(userId: string): Promise<Workout[]> {
 
   console.log('Workouts to return:', JSON.stringify(workouts));
   return workouts;
+}
+
+export async function getWorkoutIdSet(userId: string): Promise<DynamoDB.DocumentClient.DynamoDbSet> {
+  let getRequest: DynamoDB.DocumentClient.GetItemInput = {
+    TableName: userWorkoutTable,
+    Key: {
+      userId: userId,
+    },
+  };
+  let getResult = await dynamoDB.get(getRequest).promise();
+  return getResult.Item && getResult.Item['workouts']
+    ? getResult.Item['workouts']
+    : undefined;
+}
+
+export async function addWorkoutsToUser(userId: string, workoutSet: DynamoDB.DocumentClient.DynamoDbSet) {
+  let updateRequest: DynamoDB.DocumentClient.UpdateItemInput = {
+    TableName: userWorkoutTable,
+    Key: {
+      userId: userId
+    },
+    UpdateExpression: "ADD workouts :workouts",
+    ExpressionAttributeValues: {
+      ":workouts": workoutSet
+    },
+  }
+  dynamoDB.update(updateRequest).promise();
+}
+
+export async function deleteUserFromWorkouts(userId: string) {
+  let deleteRequest: DynamoDB.DocumentClient.DeleteItemInput = {
+    TableName: userWorkoutTable,
+    Key: {
+      userId: userId
+    }
+  }
+
+  return dynamoDB.delete(deleteRequest).promise()
 }

@@ -4,9 +4,13 @@ import { Bool } from 'aws-sdk/clients/clouddirectory';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
+const userTable = process.env.USER_TABLE
+const exerciseTable = process.env.EXERCISE_TABLE
+const userExerciseTable = process.env.USER_EXERCISE_TABLE
+
 async function checkIfExistingExercise(id: string): Promise<Bool> {
   let queryParams: DynamoDB.DocumentClient.QueryInput = {
-    TableName: process.env.USER_TABLE,
+    TableName: userTable,
     KeyConditionExpression: 'id = :exerciseId',
     ExpressionAttributeValues: {
       ':exerciseId': id,
@@ -25,25 +29,12 @@ export async function saveNewExercise(exercise: Exercise, userId: string) {
   if (!isExistingExercise) {
     // Put a new entry
     let putRequest: DynamoDB.DocumentClient.PutItemInput = {
-      TableName: process.env.EXERCISE_TABLE,
+      TableName: exerciseTable,
       Item: exercise,
     };
     let putRequestPromise = dynamoDB.put(putRequest).promise();
 
-    // Add exercise to user
-    let updateUserExerciseRequest: DynamoDB.DocumentClient.UpdateItemInput = {
-      TableName: process.env.USER_EXERCISE_TABLE,
-      Key: {
-        userId: userId,
-      },
-      UpdateExpression: 'ADD exercises :exercise',
-      ExpressionAttributeValues: {
-        ':exercise': dynamoDB.createSet([exercise.id]),
-      },
-    };
-    let updateUserExercisesPromise = dynamoDB
-      .update(updateUserExerciseRequest)
-      .promise();
+    let updateUserExercisesPromise = addExercisesToUser(userId, dynamoDB.createSet([exercise.id]))
 
     return { ...putRequestPromise, ...updateUserExercisesPromise };
   } else {
@@ -53,7 +44,7 @@ export async function saveNewExercise(exercise: Exercise, userId: string) {
 
 export async function getExercise(id: string): Promise<Exercise> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.EXERCISE_TABLE,
+    TableName: exerciseTable,
     Key: {
       id: id,
     },
@@ -68,7 +59,7 @@ export async function getExercise(id: string): Promise<Exercise> {
 
 async function getExerciseIdsForUser(userId: string): Promise<string[]> {
   let getRequest: DynamoDB.DocumentClient.GetItemInput = {
-    TableName: process.env.USER_EXERCISE_TABLE,
+    TableName: userExerciseTable,
     Key: {
       userId: userId,
     },
@@ -102,4 +93,42 @@ export async function getExercisesForUserId(
 
   console.log('Exercises to return:', JSON.stringify(exercises));
   return exercises;
+}
+
+export async function getExerciseSet(userId: string): Promise<DynamoDB.DocumentClient.DynamoDbSet> {
+  let getExercisesRequest: DynamoDB.DocumentClient.GetItemInput = {
+    TableName: userExerciseTable,
+    Key: {
+      userId: userId
+    }
+  }
+  let exercisesResponse = await dynamoDB.get(getExercisesRequest).promise()
+  return exercisesResponse.Item && exercisesResponse.Item["exercises"] 
+    ? exercisesResponse.Item["exercises"] 
+    : undefined;
+}
+
+export async function addExercisesToUser(userId: string, exerciseSet: DynamoDB.DocumentClient.DynamoDbSet) {
+  let updateRequest: DynamoDB.DocumentClient.UpdateItemInput = {
+    TableName: userExerciseTable,
+    Key: {
+      userId: userId
+    },
+    UpdateExpression: "ADD exercises :exercises",
+    ExpressionAttributeValues: {
+      ":exercises": exerciseSet
+    },
+  }
+  return dynamoDB.update(updateRequest).promise();
+}
+
+export async function deleteUserFromExercises(userId: string) {
+  let deleteRequest: DynamoDB.DocumentClient.DeleteItemInput = {
+    TableName: userExerciseTable,
+    Key: {
+      userId: userId
+    }
+  }
+
+  return dynamoDB.delete(deleteRequest).promise()
 }
