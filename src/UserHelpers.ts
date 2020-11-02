@@ -23,6 +23,7 @@ export async function saveNewUserId(id: string) {
       Item: {
         id: id,
         didCreateAccount: false,
+        creationTS: Date.now()
       },
     };
     return dynamoDB.put(putRequest).promise();
@@ -60,6 +61,7 @@ export async function saveUserPassword(user: User, deviceId?: string) {
           id: user.id,
           password: hashedPassword,
           didCreateAccount: true,
+          creationTS: Date.now()
         },
       };
 
