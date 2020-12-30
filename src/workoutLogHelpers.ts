@@ -1,4 +1,4 @@
-import { CompletedWorkout, CompletedWorkoutShort, Round, Workout } from './ServiceTypes';
+import { CompletedWorkout, CompletedWorkoutShort, Round, Workout, WorkoutLogItem } from './ServiceTypes';
 import { DynamoDB } from 'aws-sdk';
 import { getWorkout } from './WorkoutHelpers';
 
@@ -10,11 +10,11 @@ type WorkoutLogEntry = {
   userId: string;
   wlId: string;
   workoutId: string;
-  time: number;
+  time?: number;
   startTS: number;
 };
 
-export async function saveToWorkoutLog(
+export async function saveCompletedWorkoutToLog( // Deprecated after 1.3
   completedWorkout: CompletedWorkoutShort,
   userId: string
 ) {
@@ -29,6 +29,23 @@ export async function saveToWorkoutLog(
   };
 
   // TODO: - save workout if doesn't exist
+
+  return dynamoDB.put(putRequest).promise();
+}
+
+export async function saveToWorkoutLog(
+  workoutLogItem: WorkoutLogItem,
+  userId: string
+) {
+  let workoutLogEntry: WorkoutLogEntry = {
+    ...{ userId: userId },
+    ...workoutLogItem,
+  };
+
+  let putRequest: DynamoDB.DocumentClient.PutItemInput = {
+    TableName: workoutLogTable,
+    Item: workoutLogEntry,
+  };
 
   return dynamoDB.put(putRequest).promise();
 }

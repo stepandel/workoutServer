@@ -157,12 +157,31 @@ export type SaveCompletedWorkoutRequest = {
   userId: string;
 };
 
+export type WorkoutLogItem = {
+  wlId: string;
+  workoutId: string;
+  time?: number;
+  startTS: number;
+}
+
+export type SaveWorkoutLogItemRequest = {
+  workoutLogItem: WorkoutLogItem;
+  userId: string;
+}
+
+export type ScheduledWorkout = {
+  wlId: string;
+  workout: Workout;
+  startTS: number;
+}
+
 export type GetWorkoutLogForUserRequest = {
   userId: string;
 };
 
 export type GetWorkoutLogForUserResponse = {
   completedWorkouts: CompletedWorkout[];
+  scheduledWorkouts: ScheduledWorkout[];
 };
 
 export type DeleteWorkoutFromLogRequest = {
@@ -206,6 +225,7 @@ export type GetWorkoutsAndStatsForUserRequest = {
 
 export type GetWorkoutsAndStatsForUserResponse = {
   completedWorkouts: CompletedWorkout[]
+  scheduledWorkouts: ScheduledWorkout[]
   stats: Stats
   weeklyStats: WeeklyStats
 }

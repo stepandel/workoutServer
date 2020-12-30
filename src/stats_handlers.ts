@@ -23,6 +23,7 @@ async function getCompletedWorkoutsAndStatsForUser(r: GetWorkoutsAndStatsForUser
 
   return {
     completedWorkouts: workoutsAndStats.completedWorkouts,
+    scheduledWorkouts: workoutsAndStats.scheduledWorkouts,
     stats: await statsPromise,
     weeklyStats: workoutsAndStats.weeklyStats
   }

@@ -147,6 +147,13 @@ functions:
           path: saveCompletedWorkout
           method: post
           cors: true
+  saveWorkoutLogItem:
+    handler: src/workoutLog_handlers.saveWorkoutLogItem
+    events:
+      - http:
+          path: saveWorkoutLogItem
+          method: post
+          cors: true
   getWorkoutLogForUser:
     handler: src/workoutLog_handlers.getWorkoutLogForUser
     events:
