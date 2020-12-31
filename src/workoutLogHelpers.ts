@@ -1,4 +1,4 @@
-import { CompletedWorkout, CompletedWorkoutShort, Round, ScheduledWorkout, Workout, WorkoutLogItem } from './ServiceTypes';
+import { CompletedWorkout, CompletedWorkoutShort, Round, Workout, WorkoutLogItem, WorkoutLogItemShort } from './ServiceTypes';
 import { DynamoDB } from 'aws-sdk';
 import { getWorkout } from './WorkoutHelpers';
 
@@ -34,7 +34,7 @@ export async function saveCompletedWorkoutToLog( // Deprecated after 1.3
 }
 
 export async function saveToWorkoutLog(
-  workoutLogItem: WorkoutLogItem,
+  workoutLogItem: WorkoutLogItemShort,
   userId: string
 ) {
   let workoutLogEntry: WorkoutLogEntry = {
@@ -66,7 +66,7 @@ export async function getWorkoutLogEntriesForUser(userId): Promise<WorkoutLogEnt
 
 export async function getWorkoutLogItemsForUser(
   userId: String
-): Promise<{ completedWorkouts: CompletedWorkout[], scheduledWorkouts: ScheduledWorkout[] }> {
+): Promise<{ completedWorkouts: CompletedWorkout[], workoutLog: WorkoutLogItem[] }> {
   let workoutLogEntries = await getWorkoutLogEntriesForUser(userId);
 
   let workouts = await workoutLogEntries.reduce(async (promise, item) => {
@@ -96,25 +96,26 @@ export async function getWorkoutLogItemsForUser(
   
         res.completedWorkouts.push(completedWorkout);
         
-      } else {
-        let scheduledWorkout: ScheduledWorkout = {
-          wlId: item.wlId,
-          workout: cleanWorkout,
-          startTS: item.startTS,
-        };
-  
-        res.scheduledWorkouts.push(scheduledWorkout);
       }
+      
+      let workoutLogItem: WorkoutLogItem = {
+        wlId: item.wlId,
+        workout: cleanWorkout,
+        time: item.time,
+        startTS: item.startTS,
+      };
+
+      res.workoutLog.push(workoutLogItem);
 
       return res;
     } else {
       return res;
     }
-  }, Promise.resolve({ completedWorkouts: [], scheduledWorkouts: [] }));
+  }, Promise.resolve({ completedWorkouts: [], workoutLog: [] }));
 
   return { 
     completedWorkouts: workouts.completedWorkouts.sort((a, b) => a.startTS - b.startTS),
-    scheduledWorkouts: workouts.scheduledWorkouts.sort((a, b) => a.startTS - b.startTS)
+    workoutLog: workouts.workoutLog.sort((a, b) => a.startTS - b.startTS)
   }
 }
 

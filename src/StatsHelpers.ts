@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk';
-import { CompletedWorkout, ScheduledWorkout, Stats, WeeklyStats } from './ServiceTypes';
+import { CompletedWorkout, Stats, WeeklyStats, WorkoutLogItem } from './ServiceTypes';
 import { getWorkoutLogItemsForUser } from './workoutLogHelpers';
 
 const dynamoDB = new DynamoDB.DocumentClient();
@@ -30,10 +30,10 @@ export async function getStats(userId: string): Promise<Stats> {
   return getResult.Item as Stats;
 }
 
-export async function getWorkoutsAndWeeklyStats(userId: string, timezoneOffset: number): Promise<{ weeklyStats: WeeklyStats, completedWorkouts: CompletedWorkout[], scheduledWorkouts: ScheduledWorkout[] }> {
+export async function getWorkoutsAndWeeklyStats(userId: string, timezoneOffset: number): Promise<{ weeklyStats: WeeklyStats, completedWorkouts: CompletedWorkout[], workoutLog: WorkoutLogItem[] }> {
   let workoutLogItems = await getWorkoutLogItemsForUser(userId)
   let completedWorkouts = workoutLogItems.completedWorkouts
-  let scheduledWorkouts = workoutLogItems.scheduledWorkouts
+  let workoutLog = workoutLogItems.workoutLog
   let clientDate = Date.now() + (timezoneOffset * 60000)
   let weekStart = getMonday(new Date(clientDate)).getTime() / 1000
 
@@ -64,7 +64,7 @@ export async function getWorkoutsAndWeeklyStats(userId: string, timezoneOffset: 
   return {
     weeklyStats: stats,
     completedWorkouts: completedWorkouts,
-    scheduledWorkouts: scheduledWorkouts
+    workoutLog: workoutLog
   }
 }
 
