@@ -9,7 +9,7 @@ import {
 import {
   saveToWorkoutLog,
   saveCompletedWorkoutToLog,
-  getCompletedWorkoutsForUser,
+  getWorkoutLogItemsForUser,
   deleteWorkoutLogItem,
 } from './workoutLogHelpers';
 
@@ -24,10 +24,7 @@ async function saveWorkoutLogItem(r: SaveWorkoutLogItemRequest) {
 async function getWorkoutLogForUser(
   r: GetWorkoutLogForUserRequest
 ): Promise<GetWorkoutLogForUserResponse> {
-  return {
-    completedWorkouts: await getCompletedWorkoutsForUser(r.userId),
-    scheduledWorkouts: []
-  };
+  return getWorkoutLogItemsForUser(r.userId);
 }
 
 async function deleteWorkoutFromLog(r: DeleteWorkoutFromLogRequest) {
